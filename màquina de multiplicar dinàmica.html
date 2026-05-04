@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Màquina de Multiplicar Dinàmica</title>
+<style>
+:root {
+    --primary: #4361ee;
+    --secondary: #3f37c9;
+    --machine-orange: #ff6b6b;
+    --machine-orange-dark: #ee5253;
+    --machine-yellow: #feca57;
+    --machine-blue: #48dbfb;
+    --machine-blue-dark: #0abde3;
+    --tube-glass: linear-gradient(to bottom, rgba(255,255,255,0.8) 0%, rgba(200,230,255,0.4) 50%, rgba(255,255,255,0.8) 100%);
+    --success: #4CAF50;
+    --error: #f72585;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f8f9fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.contenidor {
+    background: #ffffff;
+    padding: 20px 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 860px;
+}
+
+h1 {
+    margin: 0;
+    color: var(--secondary);
+    font-size: 28px;
+    margin-bottom: 5px;
+}
+
+#autoria {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 25px;
+}
+
+/* --- ESCENA MÀQUINA --- */
+.escena-maquina {
+    position: relative;
+    width: 100%;
+    height: 320px;
+    margin: 20px auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    padding-bottom: 10px;
+    overflow: hidden;
+}
+
+/* --- ESTRUCTURA MÀQUINA --- */
+.base-maquina {
+    position: absolute;
+    bottom: 0;
+    width: 280px;
+    height: 40px;
+    background: var(--machine-blue);
+    border-bottom: 6px solid var(--machine-blue-dark);
+    border-radius: 20px;
+    z-index: 10;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.maquina-cos {
+    position: relative;
+    width: 220px;
+    height: 240px;
+    background: linear-gradient(180deg, var(--machine-orange) 0%, var(--machine-orange-dark) 100%);
+    border-radius: 100px 100px 20px 20px;
+    z-index: 20;
+    bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: inset -5px -5px 10px rgba(0,0,0,0.1);
+    transition: transform 0.1s;
+}
+
+.maquina-cos.processant {
+    animation: vibrar 0.5s ease-in-out;
+}
+
+@keyframes vibrar {
+    0% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(1.02) rotate(-2deg); }
+    50% { transform: scale(1.02) rotate(2deg); }
+    75% { transform: scale(1.02) rotate(-2deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+.engranatge-central {
+    width: 100px;
+    height: 100px;
+    margin-top: 20px;
+    background: var(--machine-yellow);
+    border-radius: 50%;
+    border: 5px solid #e1b12c;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+}
+
+.ull-engranatge {
+    width: 30px;
+    height: 30px;
+    background: #333;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    z-index: 2;
+}
+
+.dents-svg {
+    position: absolute;
+    width: 140%;
+    height: 140%;
+    top: -20%;
+    left: -20%;
+    animation: girar-lent 10s linear infinite;
+}
+
+@keyframes girar-lent { to { transform: rotate(360deg); } }
+
+.llums-panel {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+    margin-bottom: 10px;
+}
+.led {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.pantalla-marc {
+    width: 160px;
+    height: 60px;
+    background: #f1f2f6;
+    border-radius: 15px;
+    border-bottom: 5px solid #dcdde1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1);
+}
+
+.pantalla-text {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 32px;
+    font-weight: 900;
+    color: #333;
+}
+
+/* --- TUBS --- */
+.tub-container {
+    position: absolute;
+    bottom: 90px;
+    width: 250px;
+    height: 60px;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+}
+.tub-esquerra { right: 50%; margin-right: 80px; flex-direction: row; }
+.tub-dreta { left: 50%; margin-left: 80px; flex-direction: row-reverse; }
+
+.tub-vidre {
+    flex-grow: 1;
+    height: 100%;
+    background: var(--tube-glass);
+    border-top: 2px solid rgba(255,255,255,0.9);
+    border-bottom: 2px solid rgba(255,255,255,0.5);
+    position: relative;
+    background-image: linear-gradient(0deg, transparent 40%, rgba(67, 97, 238, 0.1) 40%, rgba(67, 97, 238, 0.1) 60%, transparent 60%);
+}
+
+.anella-vermella {
+    width: 20px;
+    height: 70px;
+    background: radial-gradient(circle at 30% 30%, #ff6b6b, #d63031);
+    border-radius: 10px;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+    z-index: 6;
+}
+
+.etiqueta-tub {
+    position: absolute;
+    top: -30px;
+    font-weight: bold;
+    font-size: 18px;
+    color: #333;
+    text-transform: uppercase;
+}
+.tub-esquerra .etiqueta-tub { left: 10px; }
+.tub-dreta .etiqueta-tub { right: 10px; }
+
+/* --- NÚMEROS MÒBILS (PAQUETS) --- */
+.paquet {
+    position: absolute;
+    width: 50px;
+    height: 40px;
+    background: #fff;
+    border: 2px solid #333;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    z-index: 15;
+    bottom: 100px;
+    /* La transició es gestiona via JS o classes específiques */
+}
+
+/* POSICIONS CLAU */
+#paquetEntrada { left: 15%; } /* Inici */
+#paquetSortida { left: 85%; } /* Final */
+
+/* Animacions */
+.anim-entrant {
+    left: 50% !important;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: left 0.8s ease-in, opacity 0.5s ease-in 0.3s, transform 0.5s ease-in 0.3s;
+}
+.anim-sortint {
+    left: 85% !important;
+    opacity: 1 !important;
+    transform: scale(1) !important;
+    transition: left 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* --- ZONA INPUT DINÀMICA --- */
+.input-area {
+    position: absolute; 
+    z-index: 100;
+    display: flex;
+    gap: 5px;
+    transition: all 0.5s ease;
+    align-items: center;
+    background: rgba(255,255,255,0.8);
+    padding: 5px;
+    border-radius: 12px;
+}
+
+.posicio-entrada {
+    left: 14%;
+    bottom: 92px;
+}
+.posicio-rao {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 105px;
+}
+.posicio-sortida {
+    right: 14%;
+    bottom: 92px;
+}
+
+input.resposta {
+    font-size: 20px;
+    padding: 5px;
+    width: 60px;
+    text-align: center;
+    border: 2px solid #333;
+    border-radius: 8px;
+    outline: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+input.resposta:focus { border-color: var(--primary); }
+
+button.boto-accio {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 5px 12px;
+    font-size: 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+button.boto-accio:hover { background: var(--secondary); }
+
+/* CONTROLS EXTERNS */
+.controls-externs {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 10px;
+}
+button.boto-nou {
+    background: #118ab2;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    display: none;
+}
+
+.equacio-final {
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--secondary);
+    margin-bottom: 5px;
+    min-height: 40px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.5s ease;
+}
+.equacio-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#missatge {
+    font-size: 18px;
+    font-weight: bold;
+    min-height: 27px;
+}
+.text-correcte { color: var(--success); }
+.text-incorrecte { color: var(--error); }
+
+.config-panel {
+    background: #f1f1f1;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+.config-panel select, .config-panel input { padding: 5px; border-radius: 5px; border: 1px solid #ccc; }
+.amagat { opacity: 0; pointer-events: none; }
+
+</style>
+</head>
+<body>
+
+<div class="contenidor">
+    <h1>🏭 Màquina de Multiplicar</h1>
+    <div id="autoria">Miquel Colomo Morales, amb l'ajuda de Gemini, febrer de 2026</div>
+
+    <!-- Configuració -->
+    <div class="config-panel">
+        <label>Mode:</label>
+        <select id="tipusExercici">
+            <option value="rao">Endevinar Multiplicador (×?)</option>
+            <option value="entrada">Endevinar Entrada (IN?)</option>
+            <option value="sortida">Endevinar Sortida (OUT?)</option>
+            <option value="barrejat">Barrejat</option>
+        </select>
+        <label>Màx Ent:</label>
+        <input id="limitEntrada" type="number" min="1" max="50" value="10" style="width:50px;">
+        <label>Màx Mult:</label>
+        <input id="limitRao" type="number" min="2" max="15" value="10" style="width:50px;">
+        <button id="btnConfig" style="padding:5px 10px; cursor:pointer;">Reiniciar</button>
+    </div>
+
+    <p id="instruccions">Calcula el valor que falta!</p>
+
+    <!-- La Màquina Visual -->
+    <div class="escena-maquina">
+        <div class="base-maquina"></div>
+
+        <div class="tub-container tub-esquerra">
+            <div class="etiqueta-tub">Entrada</div>
+            <div class="anella-vermella"></div>
+            <div class="tub-vidre"></div>
+        </div>
+
+        <div class="tub-container tub-dreta">
+            <div class="etiqueta-tub">Sortida</div>
+            <div class="anella-vermella"></div>
+            <div class="tub-vidre"></div>
+        </div>
+
+        <div class="maquina-cos" id="maquinaCos">
+            <div class="engranatge-central">
+                <svg class="dents-svg" viewBox="0 0 100 100">
+                    <path fill="var(--machine-yellow)" d="M50,0 L60,10 L70,5 L80,20 L95,15 L90,30 L100,40 L90,50 L100,60 L90,70 L95,85 L80,80 L70,95 L60,90 L50,100 L40,90 L30,95 L20,80 L5,85 L10,70 L0,60 L10,50 L0,40 L10,30 L5,15 L20,20 L30,5 L40,10 Z" />
+                </svg>
+                <div class="ull-engranatge"></div>
+            </div>
+
+            <div class="llums-panel">
+                <div class="led" style="background:#ffd32a" id="led1"></div>
+                <div class="led" style="background:#0fb9b1" id="led2"></div>
+                <div class="led" style="background:#ff3f34" id="led3"></div>
+            </div>
+
+            <div class="pantalla-marc">
+                <div id="pantallaMultiplicador" class="pantalla-text">× ?</div>
+            </div>
+        </div>
+
+        <!-- Números -->
+        <div id="paquetEntrada" class="paquet">10</div>
+        <div id="paquetSortida" class="paquet">20</div>
+
+        <!-- Input dins de l'escena -->
+        <div class="input-area" id="zonaInput">
+            <input id="respostaInput" type="tel" class="resposta" placeholder="?" autocomplete="off">
+            <button id="btnComprovar" class="boto-accio">✔</button>
+        </div>
+    </div>
+
+    <!-- Controls Externs -->
+    <div class="controls-externs">
+        <div id="equacioCompleta" class="equacio-final"></div>
+        <div id="missatge"></div>
+        <button id="btnSeguent" class="boto-nou">Nova Operació ➡</button>
+    </div>
+</div>
+
+<script>
+// Confeti simple
+const confetti={maxCount:150,speed:2,frameInterval:15,alpha:1,gradient:!1,start:null,stop:null,toggle:null,pause:null,resume:null,togglePause:null,remove:null,isPaused:null,isRunning:null};!function(){confetti.start=s,confetti.stop=w,confetti.toggle=function(){e?w():s()},confetti.pause=u,confetti.resume=m,confetti.togglePause=function(){i?m():u()},confetti.isPaused=function(){return i},confetti.remove=r,confetti.isRunning=function(){return e};var e=!1,i=!1,a=window.requestAnimationFrame||window.webkitRequestAnimationFrame||window.mozRequestAnimationFrame||window.oRequestAnimationFrame||window.msRequestAnimationFrame,n=["rgba(30,144,255,","rgba(107,142,35,","rgba(255,215,0,","rgba(255,69,0,","rgba(0,191,255,","rgba(72,61,139,","rgba(255,105,180,"],t=Math.random,o={top:0,bottom:1,left:0,right:1,indexOf:function(e){return-1}};function l(e){o=e}function c(e){var n=Math.random()+.3,o=function(e){var n=Math.random(),o=n<.5?n:n-1;return{x:o,y:Math.random()-1}}(0);return{x:e.x,y:e.y,w:20*n,h:10*n,dx:o.x,dy:o.y,rotation:t()*Math.PI}}function d(e){e.y+=Math.cos(e.rotation)*e.dy,e.x+=Math.sin(e.rotation)*e.dx,e.rotation+=e.dy}function s(){e||(e=!0,i=!1,function e(){if(!i)if(0===f.length)w();else{var n=Date.now(),t=n-h;(!a||t>confetti.frameInterval)&&(h=n-t%confetti.frameInterval,d(f[0]),0<f[0].y&&0<f[0].x&&f[0].y<window.innerHeight&&f[0].x<window.innerWidth||f.shift()),f.length&&a(e)}var h=Date.now()}())}function w(){e=!1}function u(){i=!0}function m(){i=!1,s()}var f=[];window.confetti=confetti}();
+function llancarConfeti() {
+    for(let i=0; i<50; i++) {
+        const c = document.createElement('div');
+        c.style.position = 'fixed';
+        c.style.left = Math.random()*100 + 'vw';
+        c.style.top = '-10px';
+        c.style.width = '10px';
+        c.style.height = '10px';
+        c.style.backgroundColor = `hsl(${Math.random()*360}, 100%, 50%)`;
+        c.style.zIndex = '9999';
+        c.style.transition = 'top 2s ease-in, transform 2s linear';
+        document.body.appendChild(c);
+        setTimeout(() => { c.style.top = '110vh'; c.style.transform = `rotate(${Math.random()*360}deg)`; }, 10);
+        setTimeout(() => c.remove(), 2000);
+    }
+}
+</script>
+
+<script>
+let estat = { entrada: 0, rao: 0, sortida: 0, mode: 'rao', submode: 'rao', resolt: false };
+
+const els = {
+    pEntrada: document.getElementById('paquetEntrada'),
+    pSortida: document.getElementById('paquetSortida'),
+    pantalla: document.getElementById('pantallaMultiplicador'),
+    input: document.getElementById('respostaInput'),
+    btnCheck: document.getElementById('btnComprovar'),
+    btnNext: document.getElementById('btnSeguent'),
+    msg: document.getElementById('missatge'),
+    equacio: document.getElementById('equacioCompleta'),
+    instruccions: document.getElementById('instruccions'),
+    maquina: document.getElementById('maquinaCos'),
+    zonaInput: document.getElementById('zonaInput'),
+    leds: [document.getElementById('led1'), document.getElementById('led2'), document.getElementById('led3')]
+};
+
+const config = {
+    limitEntrada: document.getElementById('limitEntrada'),
+    limitRao: document.getElementById('limitRao'),
+    selectorMode: document.getElementById('tipusExercici'),
+    btnConfig: document.getElementById('btnConfig')
+};
+
+function generarNumero(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function triarSubmode(mode) {
+    if (mode === 'barrejat') {
+        const opcions = ['rao', 'entrada', 'sortida'];
+        return opcions[Math.floor(Math.random() * opcions.length)];
+    }
+    return mode;
+}
+
+function configurarPartida() {
+    estat.mode = config.selectorMode.value;
+    const maxIn = parseInt(config.limitEntrada.value) || 10;
+    const maxRao = parseInt(config.limitRao.value) || 10;
+
+    estat.submode = triarSubmode(estat.mode);
+    estat.entrada = generarNumero(1, maxIn);
+    estat.rao = generarNumero(2, maxRao);
+    estat.sortida = estat.entrada * estat.rao;
+    estat.resolt = false;
+
+    renderitzarEscenaInicial();
+}
+
+function renderitzarEscenaInicial() {
+    // Reset visual
+    // Eliminem classes d'animació anteriors
+    els.pEntrada.classList.remove('anim-entrant', 'amagat');
+    els.pSortida.classList.remove('anim-sortint');
+    els.pEntrada.style.transition = '';
+    els.pSortida.style.transition = '';
+    
+    // Restablim posicions inicials
+    els.pEntrada.style.left = '15%';
+    els.pEntrada.style.opacity = '1';
+    els.pEntrada.style.transform = 'scale(1)';
+    
+    // Sortida dependrà del mode, però generalment al final
+    els.pSortida.style.left = '85%';
+    els.pSortida.style.opacity = '1';
+    els.pSortida.style.transform = 'scale(1)';
+
+    // UI Reset
+    els.input.value = '';
+    els.zonaInput.style.display = 'flex';
+    els.btnCheck.style.display = 'block';
+    els.btnNext.style.display = 'none';
+    els.msg.textContent = '';
+    els.equacio.textContent = '';
+    els.equacio.classList.remove('equacio-visible');
+    els.input.focus();
+    els.leds.forEach(l => l.style.opacity = '0.5');
+
+    // Netejar classes de posició antigues
+    els.zonaInput.classList.remove('posicio-entrada', 'posicio-rao', 'posicio-sortida');
+
+    const m = estat.submode;
+
+    // --- LÒGICA DE VISIBILITAT I POSICIÓ ---
+
+    // 1. ENDEVINAR ENTRADA
+    if (m === 'entrada') {
+        // Amaguem el paquet entrada perquè hi posem l'input a sobre
+        els.pEntrada.classList.add('amagat'); 
+        els.pEntrada.textContent = estat.entrada;
+        
+        // Input a l'esquerra
+        els.zonaInput.classList.add('posicio-entrada');
+        
+        // Multiplicador i Sortida visibles
+        els.pantalla.textContent = '× ' + estat.rao;
+        els.pSortida.textContent = estat.sortida;
+
+        els.instruccions.textContent = "Quin número ha entrat?";
+    } 
+    
+    // 2. ENDEVINAR MULTIPLICADOR (RAO)
+    else if (m === 'rao') {
+        // Entrada visible
+        els.pEntrada.textContent = estat.entrada;
+
+        // Sortida visible al final
+        els.pSortida.textContent = estat.sortida;
+
+        // Pantalla oculta (tapada per input)
+        els.pantalla.textContent = '× ?'; 
+        
+        // Input al centre
+        els.zonaInput.classList.add('posicio-rao');
+
+        els.instruccions.textContent = "Quin és el multiplicador?";
+    }
+
+    // 3. ENDEVINAR SORTIDA
+    else if (m === 'sortida') {
+        // Entrada visible
+        els.pEntrada.textContent = estat.entrada;
+
+        // Multiplicador visible
+        els.pantalla.textContent = '× ' + estat.rao;
+
+        // Sortida oculta (amagat perquè hi ha l'input a sobre o serà revelat)
+        els.pSortida.textContent = estat.sortida;
+        els.pSortida.style.opacity = '0'; // Amagat visualment
+
+        // Input a la dreta
+        els.zonaInput.classList.add('posicio-sortida');
+
+        els.instruccions.textContent = "Quin resultat sortirà?";
+    }
+}
+
+function animarProcesCorrecte() {
+    // 1. Amaguem controls per netejar l'escena
+    els.zonaInput.style.display = 'none';
+
+    // 2. FORÇAR ESTAT INICIAL DEL CICLE (Reset)
+    // Per veure l'animació completa, posem l'entrada a l'inici i la sortida amagada al centre
+    els.pEntrada.classList.remove('amagat');
+    els.pEntrada.style.transition = 'none';
+    els.pEntrada.style.left = '15%';
+    els.pEntrada.style.opacity = '1';
+    els.pEntrada.style.transform = 'scale(1)';
+    els.pEntrada.textContent = estat.entrada; // Assegurar que es veu el número
+
+    els.pSortida.style.transition = 'none';
+    els.pSortida.style.opacity = '0'; // Amagat dins
+    els.pSortida.style.left = '50%';
+    els.pSortida.style.transform = 'scale(0.5)';
+    els.pSortida.textContent = estat.sortida;
+
+    // Assegurar text correcte a la pantalla
+    els.pantalla.textContent = '× ' + estat.rao;
+
+    // Forçar reflow perquè el navegador apliqui els canvis de posició immediats abans d'animar
+    void els.pEntrada.offsetWidth; 
+
+    // 3. INICIAR ANIMACIÓ
+    
+    // Pas A: Entrar
+    setTimeout(() => {
+        // Afegim transició CSS manualment o classe
+        els.pEntrada.classList.add('anim-entrant');
+    }, 50);
+
+    // Llums parpellegen
+    let flash = 0;
+    const interval = setInterval(() => {
+        els.leds.forEach(l => l.style.opacity = Math.random() > 0.5 ? '1' : '0.3');
+        flash++;
+        if(flash > 12) clearInterval(interval);
+    }, 100);
+
+    // Pas B: Processar (vibrar) quan arriba al mig
+    setTimeout(() => {
+        els.maquina.classList.add('processant');
+    }, 800); // 800ms triga a entrar
+
+    // Pas C: Sortir
+    setTimeout(() => {
+        els.maquina.classList.remove('processant');
+        clearInterval(interval);
+        els.leds.forEach(l => l.style.opacity = '1');
+        
+        els.pSortida.classList.add('anim-sortint'); // Surt disparat
+        
+        // Confeti quan surt el resultat
+        setTimeout(llancarConfeti, 300);
+
+    }, 1400); // 800 (entrar) + 600 (processar)
+}
+
+function comprovarResposta() {
+    if (estat.resolt) return;
+    const valor = parseInt(els.input.value);
+    if (isNaN(valor)) return;
+
+    let correcte = false;
+    if (estat.submode === 'rao') correcte = (valor === estat.rao);
+    else if (estat.submode === 'entrada') correcte = (valor === estat.entrada);
+    else if (estat.submode === 'sortida') correcte = (valor === estat.sortida);
+
+    if (correcte) {
+        estat.resolt = true;
+        
+        // Mostrar equació completa
+        els.equacio.textContent = `${estat.entrada} × ${estat.rao} = ${estat.sortida}`;
+        els.equacio.classList.add('equacio-visible');
+
+        els.msg.textContent = "Correcte!";
+        els.msg.className = "text-correcte";
+        els.btnNext.style.display = 'block';
+        
+        animarProcesCorrecte();
+    } else {
+        els.msg.textContent = "Torna-ho a provar.";
+        els.msg.className = "text-incorrecte";
+        els.input.style.borderColor = 'red';
+        setTimeout(() => els.input.style.borderColor = '#333', 500);
+    }
+}
+
+els.btnCheck.addEventListener('click', comprovarResposta);
+els.input.addEventListener('keydown', (e) => { if (e.key === 'Enter') comprovarResposta(); });
+els.btnNext.addEventListener('click', configurarPartida);
+config.btnConfig.addEventListener('click', configurarPartida);
+
+configurarPartida();
+</script>
+
+</body>
+</html>
